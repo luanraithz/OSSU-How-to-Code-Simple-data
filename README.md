@@ -1,1 +1,1 @@
-# OSSU-computer-cience
+# OSSU-computer-science
