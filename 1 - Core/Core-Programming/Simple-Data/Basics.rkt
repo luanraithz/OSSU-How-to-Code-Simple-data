@@ -27,3 +27,16 @@
 ;   When the expression returns a irrational numbers, 
 ; racker returns the result what an 'i' in the beggining, 
 ; to explecit that the value shown isn't exacly what it is.
+
+; Primitive call rule:
+
+;   Expressions are resolve from left to right then from inside to outside.
+; In the expression: 
+(+ 2 (* 3 4) (- (+ 1 2) 3))
+;   The '(* 3 4) is reduced before the '(- (+ 1 2) 3)'
+(+ 2 12 (- (+ 1 2) 3))
+; Then the '(+ 1 2)' is reduced.
+(+ 2 12 (- 3 3))
+; Finally the '(- 3 3)'.
+(+ 2 12 0)
+;That results: 14
