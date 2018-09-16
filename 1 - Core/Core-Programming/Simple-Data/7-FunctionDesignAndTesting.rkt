@@ -3,7 +3,7 @@
 #reader(lib "htdp-beginner-reader.ss" "lang")((modname 6-FunctionDesignAndTesting) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
 ; Design a function called double that consumes a number and return twice that number.
 ; The recipe is:
-; * Signature, purpose, sub;
+; * Signature, purpose, stub;
 ; * Examples (and testing with 'check-expect')
 ; * Inventory - template & constants
 ; * Cody body
