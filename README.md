@@ -8,3 +8,11 @@
 
 ## Here are some usefull links that I used in this repository:
 * [racket docs](https://docs.racket-lang.org/reference/index.html)
+
+## And here are some notes about racket:
+
+* Racket is a dialect of Lisp and descendant of Scheme;
+* We use Racket usually to refer to a set of tools, that are:
+    * racket, the core compiler, interpreter, and run-time system;
+    * DrRacket, the programming enviroment;
+    * raco, a command line tool for executing RAcket COmmands that install packages, build libraries and more.
