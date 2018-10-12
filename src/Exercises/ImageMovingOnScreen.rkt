@@ -31,6 +31,7 @@
 (define HEIGHT 400)
 
 (define CTR-Y (/ HEIGHT 2))
+(define SPEED 10)
 
 ;; Background
 (define MTS (empty-scene WIDTH HEIGHT))
@@ -64,20 +65,31 @@
 (define (main c)
   (big-bang c                           ; Cat
             (on-tick   advance-cat)     ; Cat -> Cat
-            (to-draw   render)))        ; Cat -> Image
+            (to-draw   render)          ; Cat -> Image 
+            (on-key    handle-key)))    ; Cat KeyEvent -> Cat
 
 ;; Cat -> Cat
-;; produce the next cat, by advancing it 1 pixel to right
-(check-expect (advance-cat 3) 4)
+;; produce the next cat, by advancing it SPEED pixel(s) to right
+(check-expect (advance-cat 3) (+ 3 SPEED))
 
 (define (advance-cat c)
-  (+ c 1))
+  (if (>= c WIDTH) 0 (+ c SPEED)))
 
 ;; Cat -> Image
 ;; render the cat image at appropriate place on MTS
+
 (check-expect (render 4) (place-image CAT-IMG 4 CTR-Y MTS))
+
 (define (render c)
   (place-image CAT-IMG c CTR-Y MTS))
+
+;; Cat KeyEvent -> Cat
+;; reset cat to left edge when space key is pressed
+
+(check-expect (handle-key 10 " ") 0)
+(check-expect (handle-key 5 "a") 5)
+
+(define (handle-key c ke) (if (key=? ke " ") 0 c));stub
 
 
 
