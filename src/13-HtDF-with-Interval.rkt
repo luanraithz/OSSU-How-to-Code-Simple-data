@@ -40,5 +40,5 @@
 
 ;;<Use Template for SeatNum >
 
-(define (fn-for-seat-num sn)
-  (or (= sn 1) (= sn-32)))
+(define (aisle? sn)
+  (or (= sn SN1) (= sn SN3)))
