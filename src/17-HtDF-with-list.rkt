@@ -51,9 +51,7 @@ team-list
 (define (contains-ubc? los)
   (cond [(empty? los) false]
         [else  
-          (if (string=? (first los) "UBC") true 
-               (contains-ubc? (rest los))
-          )
+          (or (string=? (first los) "UBC") (contains-ubc? (rest los)))
         ]
   )
 )
