@@ -43,11 +43,9 @@
 (define LON4 (cons 9 (cons 45 (cons 21 (cons 92 (cons 23 (cons 100 empty)))))))
 (define LON5 (cons 61 empty))
 
-
 (check-expect (double-all LON1) empty)
 
 (check-expect (double-all LON2) (cons 120 (cons 84 empty)))
 (check-expect (double-all LON3) (cons 46 (cons 26 (cons 20 (cons 16 empty)))))
 (check-expect (double-all LON4) (cons 18 (cons 90 (cons 42 (cons 184 (cons 46 (cons 200 empty)))))))
 (check-expect (double-all LON5) (cons 122 empty))
-
