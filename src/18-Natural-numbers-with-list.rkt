@@ -70,13 +70,9 @@
 (check-expect (sum 0) 0)
 (check-expect (sum 1) 1)
 (check-expect (sum 3) (+ 3 2 1))
-(check-expect (sum -0) 0)
-(check-expect (sum -1) -1)
-(check-expect (sum -3) (+ -3 -2 -1))
 
 (define (sum n) 
   (cond [(zero? n) 0]
-        [(< n 0) (+ n (sum (add1 n)))]
         [else (+ n (sum (sub1 n )))])) ;0
 
 
@@ -86,11 +82,7 @@
 (check-expect (to-list 1) (cons 1 empty))
 (check-expect (to-list 2) (cons 2 (cons 1 empty)))
 (check-expect (to-list 3) (cons 3 (cons 2 (cons 1 empty))))
-(check-expect (to-list -1) (cons -1 empty))
-(check-expect (to-list -2) (cons -2 (cons -1 empty)))
-(check-expect (to-list -3) (cons -3 (cons -2 (cons -1 empty))))
 
 (define (to-list n) 
   (cond [(zero? n) empty]
-        [(< n 0) (cons n (to-list (add1 n)))]
         [else (cons n (to-list (sub1 n )))])) ;0
