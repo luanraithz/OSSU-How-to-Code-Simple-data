@@ -1,8 +1,6 @@
 ;; The first three lines of this file were inserted by DrRacket. They record metadata
 ;; about the language level of this file in a form that our tools can easily process.
 #reader(lib "htdp-beginner-reader.ss" "lang")((modname ArrangeImage) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
-;; arrange-images-starter.rkt (problem statement)
-
 (require 2htdp/image)
 
 ; 
@@ -55,20 +53,9 @@
 
 (check-expect (arrange-images empty) BLANK)
 
-(check-expect (arrange-images LOI2) 
-  (beside 
-    I1 
-      I2 
-        BLANK))
+(check-expect (arrange-images (cons I1 (cons I2  empty))) (beside I1 I2 BLANK))
 
-(check-expect (arrange-images 
-  (cons I2 
-    (cons I1 
-      empty)))
-  (beside 
-    I2 
-      I1 
-       BLANK))
+(check-expect (arrange-images (cons I2 (cons I1 empty))) (beside I1 I2 BLANK))
 
 
 (define (arrange-images loi) 
@@ -77,20 +64,9 @@
 ;; ListOfImage -> Image
 ;; place images beside each other in order of list
 
-(check-expect (layout-images LOI2) 
-  (beside 
-    I1 
-      I2 
-        BLANK))
+(check-expect (layout-images (cons I1 (cons I2  empty))) (beside I1 I2 BLANK))
 
-(check-expect (layout-images 
-  (cons I2 
-    (cons I1 
-      empty)))
-  (beside 
-    I2
-      I1
-        BLANK))
+(check-expect (layout-images empty) BLANK)
 
 (define (layout-images loi) 
  (cond [(empty? loi) BLANK]
@@ -100,47 +76,20 @@
 
 ;; ListOfImage -> ListOfImage
 ;; sort images in increasing order of size
-(check-expect (layout-images empty) empty)
-(check-expect (layout-images LOI2) 
-  (cons I2 
-    (cons I1 
-      empty )))
+(check-expect (sort-images empty) empty)
+(check-expect (sort-images (cons I1 (cons I2  empty))) (cons I1 (cons I2 empty )))
 
-(check-expect (layout-images 
-  (cons I2 
-    (cons I1
-      empty)))
-  (cons I1 
-   (cons I2 
-    empty)))
+(check-expect (sort-images (cons I3 (cons I1 (cons I2 empty)))) (cons I1 (cons I2 (cons I3 empty))))
 
-(check-expect (layout-images 
-  (cons I3
-    (cons I1
-      (cons I2
-        empty))))
-  (cons I1
-   (cons I2
-    (cons I3
-      empty))))
+(check-expect (sort-images 
+  (cons I3 (cons I1 (cons I2 empty))))
+  (cons I1 (cons I2 (cons I3 empty))))
 
-(check-expect (layout-images 
-  (cons I3 
-    (cons I4
-      (cons I2
-        (cons I1
-        empty)))))
-  (cons I1
-   (cons I2
-    (cons I3 
-      (cons I4
-      empty)))))
-
-(define (sort-images loi) 
+(define (sort-images loi)
   (cond [(empty? loi) empty]
-       [else (cons (first loi)
-         (sort-images (rest loi))) ]
- ))
+        [else
+         (insert (first loi)
+                 (sort-images (rest loi)))])) 
 
 
 ;; Image ListOfimage -> ListOfImage
@@ -150,19 +99,25 @@
 (check-expect (insert I1 empty) (cons I1 empty))
 (check-expect (insert I1 (cons I2 (cons I3 empty))) (cons I1 (cons I2 (cons I3 empty))))
 (check-expect (insert I2 (cons I1 (cons I3 empty))) (cons I1 (cons I2 (cons I3 empty))))
-(check-expect (insert I3 (cons I2 (cons I1 empty))) (cons I2 (cons I1 (cons I3 empty))))
+(check-expect (insert I3 (cons I1 (cons I2 empty))) (cons I1 (cons I2 (cons I3 empty))))
 
-(define (insert img lst) lst)
-#;
-(define (insert img loi) 
+
+(define (insert img loi)
   (cond [(empty? loi) (cons img empty)]
-        [else 
-          (if (larger? img (first loi))
-              (cons (first loi)
-                (insert img (rest loi)))
-              (cons img loi))]
-  ))
+        [else
+         (if (larger? img (first loi))
+             (cons (first loi)
+                   (insert img
+                           (rest loi)))
+             (cons img loi))]))
 
 ;; Image Image -> boolean
 ;; checks if the first image is bigger then the second
-(define (larger? first-image second-image ) true)
+
+(check-expect (larger? (rectangle 3 4 "solid" "red") (rectangle 2 6 "solid" "red")) false)
+(check-expect (larger? (rectangle 3 5 "solid" "red") (rectangle 2 5 "solid" "red")) true)
+(check-expect (larger? (rectangle 2 2 "solid" "red") (rectangle 2 4 "solid" "red")) false)
+
+(define (larger? first-image second-image )
+  (> (* (image-width first-image) (image-height first-image))
+     (* (image-width second-image) (image-height second-image))))
