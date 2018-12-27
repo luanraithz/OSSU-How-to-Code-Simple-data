@@ -172,9 +172,32 @@
   )
 )
 
-(define (move-tank t)
-  (make-tank (tank-x t) (+ (tank-x t) (* (tank-dir t) TANK-SPEED))))
+;; Tank -> Tank
+;; moves the given tank.
+;; - moves to the right if dir is 1
+;; - moves to the left if dir is -1
+;; If the tank is going to the edge, the direction is inverted
 
+(define (move-tank t)
+   (if (tank-out-of-box? t)
+     (make-tank (- (tank-x t) (* (tank-dir t) TANK-SPEED) ) (* -1 (tank-dir t)))
+     (make-tank (+ (tank-x t) (* (tank-dir t) TANK-SPEED) ) (tank-dir t))
+      )
+   )
+
+
+;; Tank -> Boolean
+;; produces true if a given tank is at the edge or out of the box
+
+(check-expect (tank-out-of-box? T0) false)
+(check-expect (tank-out-of-box? T1) false)
+(check-expect (tank-out-of-box? T2) false)
+(check-expect (tank-out-of-box? (make-tank WIDTH -1)) true)
+(check-expect (tank-out-of-box? (make-tank (+ WIDTH 20) -1)) true)
+  
+(define (tank-out-of-box? tank)
+  (or (>= (tank-x tank) WIDTH) (<= (tank-x tank) 0)))
+  
 ;; ListOfInvaders -> Image
 ;; produces a background with the invasors within it
 
