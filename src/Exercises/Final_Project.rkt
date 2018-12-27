@@ -1,3 +1,6 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-abbr-reader.ss" "lang")((modname Final_Project) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
 (require 2htdp/universe)
 (require 2htdp/image)
 
@@ -122,7 +125,6 @@
 #;
 (define (move-invaders-and-delete-shooted invaders missiles)
   (if (isNear? (first invader) missiles)
-    (has-been-shooted (first invader) missiles)
     (move-invaders-and-delete-shooted invaders (rest invaders missles))
     (cons (move-single-invader (first invaders)) (move-invaders-and-delete-shooted invaders (rest invaders) missiles)) 
   )
@@ -142,25 +144,50 @@
   )
 )
 
-;(define (fn-for-invader invader)
-  ;(... (invader-x invader) (invader-y invader) (invader-dx invader)))
-;(missile-x m) (missile-y m)
+;; Invader -> Invader
+;; produces a new invader with the x + speed and y + speed, and inverts speed if the
+;; invader has cross the edge
 
+(check-expect (move-single-invader (make-invader 10 12 1))
+              (make-invader (+ 10 INVADER-X-SPEED) (- 12 INVADER-Y-SPEED) 1))
+
+(check-expect (move-single-invader (make-invader (- WIDTH 1) 200 1))
+              (make-invader  (+ (- WIDTH 1) INVADER-X-SPEED) (- 200 INVADER-Y-SPEED) -1))
+
+(check-expect (move-single-invader (make-invader WIDTH 210 1))
+              (make-invader (+ WIDTH INVADER-X-SPEED) (- 210 INVADER-Y-SPEED) -1))
+
+(check-expect (move-single-invader (make-invader WIDTH 210 -1))
+              (make-invader (- WIDTH INVADER-X-SPEED) (- 210 INVADER-Y-SPEED) -1))
 
 (define (move-single-invader invader)
   (make-invader 
-    (+ (invader-x invader) (invader-dx invader)) 
-    (+ (invader-y invader) (invader-dx invader))
-    (if (or (>= (invader-x invader) WIDTH) (<= (invader-x invader) 0)) 
+    (+ (invader-x invader) (* (invader-dx invader) INVADER-X-SPEED)) 
+    (- (invader-y invader) INVADER-Y-SPEED)
+    (if (or (>= (+ (invader-x invader) (* (invader-dx invader) INVADER-X-SPEED)) WIDTH)
+           (<= (+ (invader-x invader) (* (invader-dx invader) INVADER-X-SPEED))  0)) 
       (* (invader-dx invader) -1)
       (invader-dx invader)
     ) 
   )
 )
 
-;(define (move-missles missiles)
-  ;()
-;)
-
 (define (move-tank t)
-  (make-tank (tank-x t) (+ (tank-x t) (tank-dir t))))
+  (make-tank (tank-x t) (+ (tank-x t) (* (tank-dir t) TANK-SPEED))))
+
+;; ListOfInvaders -> Image
+;; produces a background with the invasors within it
+
+(check-expect (render-invaders empty) BACKGROUND)
+
+(check-expect (render-invaders (cons (make-invader 20 40 1) empty))
+                (place-image INVADER 20 40 BACKGROUND))
+
+(check-expect (render-invaders (cons (make-invader 70 40 1) (cons (make-invader 20 40 1) empty)))
+                (place-image INVADER 70 40 (place-image INVADER 20 40 BACKGROUND)))
+
+(define (render-invaders invaders)
+  (cond [(empty? invaders) BACKGROUND]
+        [else (place-image INVADER (invader-x (first invaders)) (invader-y (first invaders))
+                           (render-invaders (rest invaders)))]
+        ))
