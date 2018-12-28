@@ -122,11 +122,10 @@
  ;   (move-tank (game-tank s))
  ; ))
 
-#;
 (define (move-invaders-and-delete-shooted invaders missiles)
-  (if (isNear? (first invader) missiles)
-    (move-invaders-and-delete-shooted invaders (rest invaders missles))
-    (cons (move-single-invader (first invaders)) (move-invaders-and-delete-shooted invaders (rest invaders) missiles)) 
+  (if (isNear? (first invaders) missiles)
+    (move-invaders-and-delete-shooted (rest invaders) missiles)
+    (cons (move-single-invader (first invaders)) (move-invaders-and-delete-shooted (rest invaders) missiles)) 
   )
 )
 
@@ -214,3 +213,19 @@
         [else (place-image INVADER (invader-x (first invaders)) (invader-y (first invaders))
                            (render-invaders (rest invaders)))]
         ))
+
+;; Tank Image -> Image
+;; produces a tank over a given image
+
+(define INI (render-invaders (cons (make-invader 70 40 1) (cons (make-invader 20 70 1) empty))))
+
+(check-expect (render-tank (make-tank 30 1) BACKGROUND)
+     (place-image TANK 30 (- HEIGHT 25) BACKGROUND))
+
+(check-expect (render-tank (make-tank 30 1) INI)
+     (place-image TANK 30 (- HEIGHT 25) INI))
+
+(define (render-tank tank image)
+  (place-image TANK (tank-x tank) (- HEIGHT 25) image))
+
+
