@@ -110,37 +110,44 @@
     (on-key on-key-pressed)
   ))
 
-(define (next-state state) state)
-
 (define (on-key-pressed c key) c)
 
-(define (render-game game) BACKGROUND)
+(define (render-game game) (render-missiles (game-missiles game) (render-tank (game-tank game) (render-invaders (game-invaders game)))))
 
-;(define (next-state s)
- ; (make-game (move-invaders-and-delete-shooted (game-invaders s) (game-missiles s))
- ;   (fn-for-lom (game-missiles s))
- ;   (move-tank (game-tank s))
- ; ))
+(define (next-state s)
+ (make-game (move-invaders-and-delete-shooted (game-invaders s) (game-missiles s))
+    (move-missiles (game-missiles s))
+    (move-tank (game-tank s))
+ ))
 
 (define (move-invaders-and-delete-shooted invaders missiles)
-  (if (isNear? (first invaders) missiles)
-    (move-invaders-and-delete-shooted (rest invaders) missiles)
-    (cons (move-single-invader (first invaders)) (move-invaders-and-delete-shooted (rest invaders) missiles)) 
+  (cond 
+   [(empty? invaders) empty]
+   [else 
+    (if (isNear? (first invaders) missiles)
+      (move-invaders-and-delete-shooted (rest invaders) missiles)
+      (cons (move-single-invader (first invaders)) (move-invaders-and-delete-shooted (rest invaders) missiles)) 
+    )]
   )
 )
 
-;; Invader Missle -> Boolean
-;; produces if the invader is near the missle, by 15 px
+;; Invader missile -> Boolean
+;; produces if the invader is near the missile, by 15 px
 
 (check-expect (isNear? I1 M1) false)
 (check-expect (isNear? I1 M2) true)
 (check-expect (isNear? I1 M3) true)
 
-(define (isNear? invader missle)
-  (and 
-    (< (missile-x missle) (+ (invader-x invader) 15)) (> (missile-x missle) (- (invader-x invader) 15))
-    (< (missile-y missle) (+ (invader-y invader) 15)) (> (missile-y missle) (- (invader-y invader) 15))
-  )
+(define (isNear? invader missiles)
+  (cond 
+    [(empty? missiles) false]
+    [else   
+      (or (and 
+        (< (missile-x (first missiles)) (+ (invader-x invader) 15)) (> (missile-x (first missiles)) (- (invader-x invader) 15))
+        (< (missile-y (first missiles)) (+ (invader-y invader) 15)) (> (missile-y (first missiles)) (- (invader-y invader) 15))
+      ) (isNear? invader (rest missiles)) )
+    ])
+  
 )
 
 ;; Invader -> Invader
@@ -229,3 +236,48 @@
   (place-image TANK (tank-x tank) (- HEIGHT 25) image))
 
 
+;; ListOfMissiles Image -> Image
+;; produces the given image with the missiles
+
+(check-expect (render-missiles empty BACKGROUND) BACKGROUND);
+
+(define M4 (make-missile 100 50))
+(check-expect (render-missiles (list M1 M2 M4) BACKGROUND)
+     (place-image MISSILE (missile-x M1) (missile-y M1)
+       (place-image MISSILE (missile-x M2) (missile-y M2)
+         (place-image MISSILE (missile-x M4) (missile-y M4) BACKGROUND))))
+
+(define TANKANDINVADERS (render-tank (make-tank 30 1) INI))
+
+(check-expect (render-missiles (list M1 M2 M4) TANKANDINVADERS)
+     (place-image MISSILE (missile-x M1) (missile-y M1)
+       (place-image MISSILE (missile-x M2) (missile-y M2)
+         (place-image MISSILE (missile-x M4) (missile-y M4) TANKANDINVADERS))))
+    
+(define (render-missiles missiles image)
+  (cond 
+    [(empty? missiles) image]
+    [else (place-image MISSILE (missile-x (first missiles)) (missile-y (first missiles)) (render-missiles (rest missiles) image))]
+  )
+)
+
+
+;; ListOfMissiles -> ListOfMissiles
+;; moves the given missles up;
+
+(check-expect (move-missiles empty) empty)
+(check-expect (move-missiles (list M1 M2))
+     (list
+      (make-missile (missile-x M1) (- (missile-y M1) MISSILE-SPEED))
+      (make-missile (missile-x M2) (- (missile-y M2) MISSILE-SPEED))) )
+
+(define (move-missiles missiles)
+  (cond 
+    [(empty? missiles) empty]
+    [else
+     (cons
+      (make-missile (missile-x (first missiles)) (- (missile-y (first missiles)) MISSILE-SPEED))
+      (move-missiles (rest missiles)))]
+  ))
+
+(main G3)
