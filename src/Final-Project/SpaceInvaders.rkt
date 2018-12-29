@@ -11,7 +11,7 @@
 (define WIDTH  300)
 (define HEIGHT 500)
 
-(define INVADER-X-SPEED 1.5)  ;speeds (not velocities) in pixels per tick
+(define INVADER-X-SPEED 1.5)
 (define INVADER-Y-SPEED 1.2)
 (define TANK-SPEED 4)
 (define MISSILE-SPEED 10)
@@ -23,16 +23,16 @@
 (define BACKGROUND (empty-scene WIDTH HEIGHT))
 
 (define INVADER
-  (overlay/xy (ellipse 10 15 "outline" "blue")              ;cockpit cover
+  (overlay/xy (ellipse 10 15 "outline" "blue")
               -5 6
-              (ellipse 20 10 "solid"   "blue")))            ;saucer
+              (ellipse 20 10 "solid"   "blue")))
 
 (define TANK
-  (overlay/xy (overlay (ellipse 28 8 "solid" "black")       ;tread center
-                       (ellipse 30 10 "solid" "green"))     ;tread outline
+  (overlay/xy (overlay (ellipse 28 8 "solid" "black")
+                       (ellipse 30 10 "solid" "green"))
               5 -14
-              (above (rectangle 5 10 "solid" "black")       ;gun
-                     (rectangle 20 10 "solid" "black"))))   ;main body
+              (above (rectangle 5 10 "solid" "black")
+                     (rectangle 20 10 "solid" "black"))))
 
 (define TANK-HEIGHT/2 (/ (image-height TANK) 2))
 
@@ -41,7 +41,6 @@
 (define GAME_OVER_BACKGROUND 
   (place-image (text "Game over" 24 "black") (/ WIDTH 2) (- (/ HEIGHT 2) 30) 
     (place-image (text "Press space to start again" 15 "black") (/ WIDTH 2) (/ HEIGHT 2) BACKGROUND)))
-
 
 ;; Data Definitions:
 
@@ -52,14 +51,6 @@
 
 ;; Game constants defined below Missile data definition
 
-#;
-(define (fn-for-game s)
-  (... (fn-for-loinvader (game-invaders s))
-       (fn-for-lom (game-missiles s))
-       (fn-for-tank (game-tank s))))
-
-
-
 (define-struct tank (x dir))
 ;; Tank is (make-tank Number Integer[-1, 1])
 ;; interp. the tank location is x, HEIGHT - TANK-HEIGHT/2 in screen coordinates
@@ -68,12 +59,6 @@
 (define T0 (make-tank (/ WIDTH 2) 1))   ;center going right
 (define T1 (make-tank 50 1))            ;going right
 (define T2 (make-tank 50 -1))           ;going left
-
-#;
-(define (fn-for-tank t)
-  (... (tank-x t) (tank-dir t)))
-
-
 
 (define-struct invader (x y dx))
 ;; Invader is (make-invader Number Number Number)
@@ -84,11 +69,6 @@
 (define I2 (make-invader 150 HEIGHT -10))       ;exactly landed, moving left
 (define I3 (make-invader 150 (+ HEIGHT 10) 10)) ;> landed, moving right
 
-#;
-(define (fn-for-invader invader)
-  (... (invader-x invader) (invader-y invader) (invader-dx invader)))
-
-
 (define-struct missile (x y))
 ;; Missile is (make-missile Number Number)
 ;; interp. the missile's location is x y in screen coordinates
@@ -96,10 +76,6 @@
 (define M1 (make-missile 150 300))                       ;not hit U1
 (define M2 (make-missile (invader-x I1) (+ (invader-y I1) 10)))  ;exactly hit U1
 (define M3 (make-missile (invader-x I1) (+ (invader-y I1)  5)))  ;> hit U1
-
-#;
-(define (fn-for-missile m)
-  (... (missile-x m) (missile-y m)))
 
 (define G0 (make-game empty empty T0))
 (define G1 (make-game empty empty T1))
@@ -133,7 +109,8 @@
     [(and (boolean? game) (not game)) GAME_OVER_BACKGROUND]
     [else 
       (render-missiles (game-missiles game) (render-tank (game-tank game) (render-invaders (game-invaders game))))
-      ])
+    ]
+  )
 )
 
 (define (next-state s)
@@ -141,7 +118,7 @@
    [(and (boolean? s) (not s)) false]
    [(is-game-over? s) false]
    [else 
-      (make-game (move-invaders-and-delete-shooted (game-invaders s) (game-missiles s))
+      (make-game (move-invaders-and-delete-shooted (add-invader-randomly (game-invaders s)) (game-missiles s))
           (move-missiles (filter-missiles (game-missiles s) (game-invaders s)))
           (move-tank (game-tank s))
       )
@@ -149,14 +126,18 @@
   )
 )
 
+;; ListOfInvaders -> ListOfInvaders
+;; ramdomly add new invader with random X position
+(define (add-invader-randomly invaders)
+  (if (= (random 27) 0) 
+    (cons (make-invader (random WIDTH) 30 1) invaders)
+    invaders))
+
 (define (move-invaders-and-delete-shooted invaders missiles)
   (cond 
    [(empty? invaders) empty]
-   [else 
-    (if (isNear? (first invaders) missiles)
-      (move-invaders-and-delete-shooted (rest invaders) missiles)
-      (cons (move-single-invader (first invaders)) (move-invaders-and-delete-shooted (rest invaders) missiles)) 
-    )]
+   [(isNear? (first invaders) missiles) (move-invaders-and-delete-shooted (rest invaders) missiles)]
+   [else (cons (move-single-invader (first invaders)) (move-invaders-and-delete-shooted (rest invaders) missiles))]
   )
 )
 
@@ -165,7 +146,6 @@
 
 (check-expect (filter-missiles empty empty) empty)
 (check-expect (filter-missiles (list M1 M2 M3) (list I1 I2 I3)) (list M1))
-
 
 (define (filter-missiles missiles invasors)
   (cond 
@@ -193,11 +173,10 @@
   )
 )
 
-
-
 ;; ListOfMissiles Invader -> ListOfMissiles
 ;; remove the missiles that are near of a given invader
 
+(check-expect (remove-near-missiles empty empty) empty)
 (check-expect (remove-near-missiles (list M1 M2 M3) I1) (list M1))
 
 (define (remove-near-missiles missiles invader)
@@ -206,8 +185,7 @@
     [(isNear? invader (cons (first missiles) empty)) (remove-near-missiles (rest missiles) invader) ]
     [else (cons (first missiles) (remove-near-missiles (rest missiles) invader))]
   )
-)
-    
+)   
 
 ;; Invader missile -> Boolean
 ;; produces if the invader is near the missile, by 15 px
@@ -313,7 +291,6 @@
 (define (render-tank tank image)
   (place-image TANK (tank-x tank) (- HEIGHT 25) image))
 
-
 ;; ListOfMissiles Image -> Image
 ;; produces the given image with the missiles
 
@@ -335,10 +312,8 @@
 (define (render-missiles missiles image)
   (cond 
     [(empty? missiles) image]
-    [else (place-image MISSILE (missile-x (first missiles)) (missile-y (first missiles)) (render-missiles (rest missiles) image))]
+    [else (place-image MISSILE (missile-x (first missiles)) (missile-y (first missiles)) (render-missiles (rest missiles) image))])
   )
-)
-
 
 ;; ListOfMissiles -> ListOfMissiles
 ;; moves the given missiles up;
@@ -347,7 +322,7 @@
 (check-expect (move-missiles (list M1 M2))
      (list
       (make-missile (missile-x M1) (- (missile-y M1) MISSILE-SPEED))
-      (make-missile (missile-x M2) (- (missile-y M2) MISSILE-SPEED))) )
+      (make-missile (missile-x M2) (- (missile-y M2) MISSILE-SPEED))))
 
 (define (move-missiles missiles)
   (cond 
@@ -355,7 +330,8 @@
     [else
      (cons
       (make-missile (missile-x (first missiles)) (- (missile-y (first missiles)) MISSILE-SPEED))
-      (move-missiles (rest missiles)))]
+      (move-missiles (rest missiles)))
+    ]
   ))
 
 (define (is-game-over? game)
@@ -367,43 +343,34 @@
     [else 
       (or (> (invader-y (first invaders)) (- HEIGHT (image-height TANK) 25))
        (is-any-invader-at-the-end? (rest invaders)))
-      ] ))
-
-
+      ]))
 
 ;; Game -> Game
 ;; inserts a new missile to the game, with current tank position as start
 
-
 ;(define G3 (make-game (list I1 I2) (list M1 M2) T1))
 
 (check-expect (shoot (make-game empty (list M1 M2) T1))
-  (make-game empty (list (make-missile (tank-x T1) (- HEIGHT 25)) M1 M2) T1)
-)
+  (make-game empty (list (make-missile (tank-x T1) (- HEIGHT 25)) M1 M2) T1))
 
 (define (shoot game) 
-  (make-game 
-    (game-invaders game) (cons (make-missile (tank-x (game-tank game)) (- HEIGHT 25)) (game-missiles game)) (game-tank game))
-)
+  (make-game (game-invaders game) (cons (make-missile (tank-x (game-tank game)) (- HEIGHT 25)) (game-missiles game)) (game-tank game)))
 
 ;; Game -> Game
 ;; turns the tank to the left direction
 (check-expect (change-direction-to-left (make-game empty (list M1 M2) T1))
-              (make-game empty (list M1 M2) (make-tank (tank-x T1) 1)))
+              (make-game empty (list M1 M2) (make-tank (tank-x T1) -1)))
 
 (define (change-direction-to-left game) 
-  (make-game (game-invaders game) (game-missiles game) (make-tank (tank-x (game-tank game)) 1))
-)
-
+  (make-game (game-invaders game) (game-missiles game) (make-tank (tank-x (game-tank game)) -1)))
 
 ;; Game -> Game 
 ;; turns the tank to the right
 (check-expect (change-direction-to-right (make-game empty (list M1 M2) T1))
-              (make-game empty (list M1 M2) (make-tank (tank-x T1) -1))
-            )
+  (make-game empty (list M1 M2) (make-tank (tank-x T1) 1)))
 
 (define (change-direction-to-right game)
-  (make-game (game-invaders game) (game-missiles game) (make-tank (tank-x (game-tank game)) -1))
+  (make-game (game-invaders game) (game-missiles game) (make-tank (tank-x (game-tank game)) 1))
 )
 
 (main INITIAL_STATE)
