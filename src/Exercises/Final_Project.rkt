@@ -142,7 +142,7 @@
    [(is-game-over? s) false]
    [else 
       (make-game (move-invaders-and-delete-shooted (game-invaders s) (game-missiles s))
-          (move-missiles (game-missiles s))
+          (move-missiles (filter-missiles (game-missiles s) (game-invaders s)))
           (move-tank (game-tank s))
       )
    ]
@@ -159,6 +159,40 @@
     )]
   )
 )
+
+;; ListOfMissiles ListOfInvasors -> ListOfMissiles
+;; filter the missiles based on if there is a invasor near
+
+(check-expect (filter-missiles empty empty) empty)
+(check-expect (filter-missiles (list M1 M2 M3) (list I1 I2 I3)) (list M1))
+
+
+(define (filter-missiles missiles invasors)
+  (cond 
+    [(empty? missiles) empty]
+    [(has-any-invasors-near? (first missiles) invasors) (filter-missiles (rest missiles) invasors)]
+    [else (cons (first missiles) (filter-missiles (rest missiles) invasors))]
+  )
+)
+
+;; Missile ListOfInvasor -> Boolean
+
+(check-expect (has-any-invasors-near? M2 (list I1)) true)
+(check-expect (has-any-invasors-near? M3 (list I1)) true)
+(check-expect (has-any-invasors-near? M1 (list I1)) false)
+
+(define (has-any-invasors-near? missile invaders)
+  (cond 
+    [(empty? invaders) false]
+    [else 
+      (or 
+        (isNear? (first invaders) (list missile)) 
+        (has-any-invasors-near? missile (rest invaders))
+      )
+    ]
+  )
+)
+
 
 
 ;; ListOfMissiles Invader -> ListOfMissiles
